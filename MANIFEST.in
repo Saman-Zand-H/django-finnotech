@@ -1,0 +1,4 @@
+include finnotech/templates/finnotech/base.html
+include finnotech/templates/finnotech/clientauth_form.html
+include finnotech/templates/finnotech/finnotech_form.html
+include finnotech/templates/finnotech/sms_auth.html

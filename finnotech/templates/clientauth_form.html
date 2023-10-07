@@ -1,0 +1,15 @@
+{% extends 'finnotech/base.html' %}
+{% load crispy_forms_tags i18n %}
+
+{% block content %}
+    {% crispy form %}
+    {% if is_valid is not None %}
+        <span>
+            {% if is_valid %}
+                <p class="text-success">{% trans "Valid" %}</p>
+            {% else %}
+                <p class="text-instagram">{% trans "Invalid" %}</p>
+            {% endif %}
+        </span>
+    {% endif %}
+{% endblock %}
