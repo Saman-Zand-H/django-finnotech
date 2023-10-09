@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from .constants import SESSIN_START_FINNOTECH_CACHE_KEY
+from .constants import SESSIN_START_FINNOTECH_CACHE_KEY, SMS_AUTH_ENDPOINT_SESSION_KEY
 from .pyfinnotech.exceptions import FinnotechHttpException
 
 logger = getLogger(__file__)
@@ -42,6 +42,7 @@ def validate_finnotech_form(func):
             messages.error(
                 self.request, _("There was and error connecting to Finnotech.")
             )
+            self.request.session.delete(SMS_AUTH_ENDPOINT_SESSION_KEY)
             return self.form_invalid(*args, **kwargs)
 
     return wrapper

@@ -49,6 +49,7 @@ class FinnotechClientAuthMixin:
             scopes=self.scope,
             redirect_url=self.FINNOTECH_REDIRECT_URL,
         )
+        # TODO: make 3*60 a variable
         cache.set(
             SESSIN_START_FINNOTECH_CACHE_KEY % self.cache_key_params(mobile),
             timezone.now(),
@@ -94,6 +95,8 @@ class FinnotechClientAuthMixin:
             code=session.code,
             redirect_url=self.FINNOTECH_REDIRECT_URL,
         )
+        
+        # todo: make 60*60*24 a variable.
         cache.set(
             OTP_TOKEN_FINNOTECH_CACHE_KEY % self.cache_key_params(mobile),
             response,

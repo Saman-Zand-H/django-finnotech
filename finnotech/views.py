@@ -1,5 +1,6 @@
+from abc import ABC
+
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.cache import cache
 from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect
@@ -20,13 +21,12 @@ from .forms import NationalcodeMobileForm, OTPForm, PostalCodeForm
 from .mixins import FinnotechClientAuthMixin
 
 
-class BaseView(LoginRequiredMixin, UserPassesTestMixin, FinnotechClientAuthMixin, View):
-    def test_func(self):
-        return self.request.user.is_superuser
+class BaseView(FinnotechClientAuthMixin, View):
+    pass
 
 
 class RequestOTPView(FormView, BaseView):
-    template_name = "finnotech/sms_auth.html"
+    template_name = "finnotech/finnotech_form.html"
     form_class = NationalcodeMobileForm
 
     def dispatch(self, request, *args, **kwargs):
@@ -44,7 +44,7 @@ class RequestOTPView(FormView, BaseView):
         nid = form.cleaned_data.get("national_id")
 
         cache_key = OTP_TOKEN_FINNOTECH_CACHE_KEY % self.cache_key_params(mobile)
-        if cache.get(cache_key):
+        if cache.has_key(cache_key):
             messages.info(self.request, _("You don't need to authorize again."))
             return redirect
 
@@ -59,10 +59,11 @@ class RequestOTPView(FormView, BaseView):
 
 
 class OTPView(FormView, BaseView):
-    template_name = "finnotech/sms_auth.html"
+    template_name = "finnotech/finnotech_form.html"
     form_class = OTPForm
 
     def dispatch(self, request, *args, **kwargs):
+        # TODO: Refactor this to mixin.
         if not (endpoint := request.session.get(SMS_AUTH_ENDPOINT_SESSION_KEY)):
             return HttpResponseBadRequest(
                 _("You don't have any on-going authorization request.")
@@ -81,7 +82,6 @@ class OTPView(FormView, BaseView):
         self.verify_finnotech_otp(mobile, nid, otp)
         self.get_finnotech_authtoken(mobile)
 
-        self.request.session.delete(SMS_AUTH_ENDPOINT_SESSION_KEY)
         messages.success(self.request, _("Your token was successfully obtained."))
         return redirect(self.redirect_url)
 

@@ -1,8 +1,14 @@
-{% extends 'prototype/base.html' %}
-{% load crispy_forms_tags %}
+{% extends 'finnotech/base.html' %}
+{% load crispy_forms_tags i18n %}
 
 
 {% block content %}
-    {% crispy form %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form }}
+        <button type="submit">
+            {% trans 'Submit' %}
+        </button>
+    </form>
     {{ data }}
 {% endblock %}

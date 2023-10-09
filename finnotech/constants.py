@@ -36,7 +36,6 @@ class FinnotechEndpoint:
     @classmethod
     def from_dict(cls, dict_):
         if not all(i in dict_ for i in ("scope", "method_name")):
-            print(dict_)
             raise TypeError("Invalid dict was passed.")
 
         for k, v in dict_.items():
