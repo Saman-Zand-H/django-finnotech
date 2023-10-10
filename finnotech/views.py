@@ -16,7 +16,6 @@ from .constants import (
     NationalcodeMobileVerification,
     PostalcodeInquiry,
 )
-from .decorators import validate_finnotech_form
 from .forms import NationalcodeMobileForm, OTPForm, PostalCodeForm
 from .mixins import FinnotechClientAuthMixin
 
@@ -25,10 +24,7 @@ class BaseView(FinnotechClientAuthMixin, View):
     pass
 
 
-class RequestOTPView(FormView, BaseView):
-    template_name = "finnotech/finnotech_form.html"
-    form_class = NationalcodeMobileForm
-
+class AuthorizationBaseView(BaseView):
     def dispatch(self, request, *args, **kwargs):
         if not (endpoint := request.session.get(SMS_AUTH_ENDPOINT_SESSION_KEY, None)):
             return HttpResponseBadRequest(
@@ -38,12 +34,19 @@ class RequestOTPView(FormView, BaseView):
         self.finnotech_endpoint = FinnotechEndpoint.from_dict(endpoint)
         return super().dispatch(request, *args, **kwargs)
 
-    @validate_finnotech_form
+    def get_cache_key(self, mobile):
+        return OTP_TOKEN_FINNOTECH_CACHE_KEY % self.cache_key_params
+
+
+class RequestOTPView(FormView, AuthorizationBaseView):
+    template_name = "finnotech/finnotech_form.html"
+    form_class = NationalcodeMobileForm
+
     def form_valid(self, form):
         mobile = form.cleaned_data.get("mobile")
         nid = form.cleaned_data.get("national_id")
 
-        cache_key = OTP_TOKEN_FINNOTECH_CACHE_KEY % self.cache_key_params(mobile)
+        cache_key = self.get_cache_key(mobile)
         if cache.has_key(cache_key):
             messages.info(self.request, _("You don't need to authorize again."))
             return redirect
@@ -58,22 +61,10 @@ class RequestOTPView(FormView, BaseView):
         return redirect("finnotech:sms_auth:otp")
 
 
-class OTPView(FormView, BaseView):
+class OTPView(FormView, AuthorizationBaseView):
     template_name = "finnotech/finnotech_form.html"
     form_class = OTPForm
 
-    def dispatch(self, request, *args, **kwargs):
-        # TODO: Refactor this to mixin.
-        if not (endpoint := request.session.get(SMS_AUTH_ENDPOINT_SESSION_KEY)):
-            return HttpResponseBadRequest(
-                _("You don't have any on-going authorization request.")
-            )
-
-        self.finnotech_endpoint = FinnotechEndpoint.from_dict(endpoint)
-        self.redirect_url = self.finnotech_endpoint.url_name
-        return super().dispatch(request, *args, **kwargs)
-
-    @validate_finnotech_form
     def form_valid(self, form):
         otp = form.cleaned_data.get("otp")
         mobile = self.request.session.get("mobile")
@@ -91,7 +82,6 @@ class NationalcodeMobileVerificationView(FormView, BaseView):
     form_class = NationalcodeMobileForm
     template_name = "finnotech/clientauth_form.html"
 
-    @validate_finnotech_form
     def form_valid(self, form):
         national_id = form.cleaned_data.get("national_id")
         mobile = form.cleaned_data.get("mobile")
@@ -111,7 +101,6 @@ class PostalCodeView(FormView, BaseView):
     form_class = PostalCodeForm
     template_name = "finnotech/finnotech_form.html"
 
-    @validate_finnotech_form
     def form_valid(self, form):
         postal_code = form.cleaned_data.get("postal_code")
 
@@ -128,11 +117,12 @@ class BackChequeInquiryView(FormView, BaseView):
     template_name = "finnotech/finnotech_form.html"
     form_class = NationalcodeMobileForm
 
-    @validate_finnotech_form
     def form_valid(self, form):
         mobile = form.cleaned_data.get("mobile")
         nid = form.cleaned_data.get("national_id")
-        cache_key = OTP_TOKEN_FINNOTECH_CACHE_KEY % self.cache_key_params(mobile)
+        cache_key = self.get_cache_key(mobile)
+
+        # check if user already has an sms-auth token.
         if not (token := cache.get(cache_key)):
             self.request.session[
                 SMS_AUTH_ENDPOINT_SESSION_KEY

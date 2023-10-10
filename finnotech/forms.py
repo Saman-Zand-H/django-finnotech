@@ -7,11 +7,11 @@ from phonenumber_field.formfields import PhoneNumberField
 class NationalcodeMobileForm(forms.Form):
     national_id = forms.CharField(max_length=10, label=_("National ID"))
     mobile = PhoneNumberField(region="IR", label=_("Mobile"))
-    
+
     def clean_mobile(self):
-        if (data:=self.cleaned_data.get("mobile")):
+        if data := self.cleaned_data.get("mobile"):
             data = data.as_national.replace(" ", "")
-            
+
         return data
 
 
