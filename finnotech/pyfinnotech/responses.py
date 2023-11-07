@@ -171,4 +171,14 @@ class PostalcodeInquiry(BaseFinnotechResponse):
 
 
 class BackChequesInqury(BaseFinnotechResponse):
-    ...
+    @property
+    def cheque_list(self):
+        return self.payload.get("result", {}).get("chequeList", [])
+    
+    @property
+    def has_back_cheques(self):
+        return self.cheque_list or False
+    
+    @property
+    def back_cheques_number(self):
+        return len(self.cheque_list)

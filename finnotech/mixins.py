@@ -2,7 +2,6 @@ from functools import wraps
 from logging import getLogger
 from operator import methodcaller
 
-from django.conf import settings
 from django.contrib import messages
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
@@ -10,6 +9,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.edit import FormMixin
 
+from .app_settings import app_settings as settings
 from .constants import (
     OTP_SEND_FINNOTECH_CACHE_KEY,
     OTP_TOKEN_FINNOTECH_CACHE_KEY,
@@ -46,7 +46,7 @@ class FinnotechClientAuthMixin:
 
         return wrapper
 
-
+    @staticmethod
     def validate_finnotech_form(func):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
@@ -60,7 +60,6 @@ class FinnotechClientAuthMixin:
                 return self.form_invalid(*args, **kwargs)
 
         return wrapper
-
 
     def check_finnotech_timeout(session_cache_key, scope=None):
         def _check_finnotech_timeout(func):
@@ -95,10 +94,10 @@ class FinnotechClientAuthMixin:
 
 
     def dispatch(self, request, *args, **kwargs):
-        self.FINNOTECH_CLIENTID = settings.FINNOTECH_CLIENTID
-        self.FINNOTECH_USERNAME = settings.FINNOTECH_USERNAME
-        self.FINNOTECH_PASSWORD = settings.FINNOTECH_PASSWORD
-        self.FINNOTECH_REDIRECT_URL = settings.FINNOTECH_REDIRECT_URL
+        self.FINNOTECH_CLIENTID = settings.CLIENTID
+        self.FINNOTECH_USERNAME = settings.USERNAME
+        self.FINNOTECH_PASSWORD = settings.PASSWORD
+        self.FINNOTECH_REDIRECT_URL = settings.REDIRECT_URL
 
         self.finnotech_endpoint = self.get_finnotech_endpoint()
         self.scope = self.finnotech_endpoint.scope
@@ -110,10 +109,10 @@ class FinnotechClientAuthMixin:
         )
         self.finnotech_sms_auth = SmsAuthorization
         self.cache_key_params = lambda i: {"scope": self.scope, "mobile": i}
-        self.remained_request_ttl = (
-            lambda start: SMS_AUTH_REQUEST_TTL - (timezone.now() - start).seconds
-        )
         return super().dispatch(request, *args, **kwargs)
+
+    def remained_request_ttl(self, start):
+        return SMS_AUTH_REQUEST_TTL - (timezone.now() - start).seconds
 
     def get_finnotech_cache_key(self, key_name: str, mobile):
         return key_name % self.cache_key_params(mobile)

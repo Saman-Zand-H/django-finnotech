@@ -34,6 +34,14 @@ requires-python = ">=3.8"
 [project.urls]
 Homepage = "http://github.com/saman-zand-h/django-finnotech"
 
+[tool.versioneer]
+VCS = "git"
+style = "pep440"
+versionfile_source = "finnotech/__init__.py"
+versionfile_build = "finnotech/__init__.py"
+tag_prefix = ""
+parentdir_prefix = "finnotech-"
+
 [tool.setuptools]
 zip-safe = false
 include-package-data = true
