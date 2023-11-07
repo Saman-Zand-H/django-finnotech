@@ -37,8 +37,8 @@ Homepage = "http://github.com/saman-zand-h/django-finnotech"
 [tool.versioneer]
 VCS = "git"
 style = "pep440"
-versionfile_source = "finnotech/__init__.py"
-versionfile_build = "finnotech/__init__.py"
+versionfile_source = "finnotech/_version.py"
+versionfile_build = "finnotech/_version.py"
 tag_prefix = ""
 parentdir_prefix = "finnotech-"
 
@@ -50,7 +50,7 @@ include-package-data = true
 exclude = ["conf*"]
 
 [tool.setuptools.dynamic]
-version = {attr = "finnotech.__version__"}
+version = {attr = "finnotech._version"}
 dependencies = {file = ["requirements.txt"]}
 
 [tool.mypy]

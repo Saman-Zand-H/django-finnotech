@@ -1,1 +1,2 @@
 finnotech/__init__.py export-subst
+finnotech/_version.py export-subst
