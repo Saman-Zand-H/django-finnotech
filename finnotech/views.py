@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.core.cache import cache
 from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import FormView
@@ -27,15 +28,15 @@ class BaseView(FinnotechClientAuthMixin, View):
 class AuthorizationBaseView(BaseView):
     def dispatch(self, request, *args, **kwargs):
         if not (endpoint := request.session.get(SMS_AUTH_ENDPOINT_SESSION_KEY, None)):
-            return HttpResponseBadRequest(
-                _("You don't have any on-going authorization request.")
-            )
+            return HttpResponseBadRequest(_("You don't have any on-going authorization request."))
 
+        # TODO: Fix redirecturl
+        self.redirect_url = reverse("finnotech:back-cheques")
         self.finnotech_endpoint = FinnotechEndpoint.from_dict(endpoint)
         return super().dispatch(request, *args, **kwargs)
 
     def get_cache_key(self, mobile):
-        return OTP_TOKEN_FINNOTECH_CACHE_KEY % self.cache_key_params
+        return OTP_TOKEN_FINNOTECH_CACHE_KEY % self.cache_key_params(mobile)
 
 
 class RequestOTPView(FormView, AuthorizationBaseView):
@@ -51,7 +52,7 @@ class RequestOTPView(FormView, AuthorizationBaseView):
             messages.info(self.request, _("You don't need to authorize again."))
             return redirect
 
-        self.send_finnotech_otp(mobile)
+        self.send_finnotech_otp(mobile=mobile)
         self.request.session.update(
             {
                 "mobile": mobile,
@@ -86,9 +87,7 @@ class NationalcodeMobileVerificationView(FormView, BaseView):
         national_id = form.cleaned_data.get("national_id")
         mobile = form.cleaned_data.get("mobile")
 
-        finnotech_response = self.make_finnotech_request(
-            national_id=national_id, mobile=mobile
-        )
+        finnotech_response = self.make_finnotech_request(national_id=national_id, mobile=mobile)
         context = {
             "is_valid": finnotech_response.is_valid,
             "form": form,
@@ -117,6 +116,9 @@ class BackChequeInquiryView(FormView, BaseView):
     template_name = "finnotech/finnotech_form.html"
     form_class = NationalcodeMobileForm
 
+    def get_cache_key(self, mobile):
+        return OTP_TOKEN_FINNOTECH_CACHE_KEY % self.cache_key_params(mobile)
+
     def form_valid(self, form):
         mobile = form.cleaned_data.get("mobile")
         nid = form.cleaned_data.get("national_id")
@@ -124,9 +126,7 @@ class BackChequeInquiryView(FormView, BaseView):
 
         # check if user already has an sms-auth token.
         if not (token := cache.get(cache_key)):
-            self.request.session[
-                SMS_AUTH_ENDPOINT_SESSION_KEY
-            ] = self.finnotech_endpoint.to_dict()
+            self.request.session[SMS_AUTH_ENDPOINT_SESSION_KEY] = self.finnotech_endpoint.to_dict()
             messages.info(self.request, _("Please fill in the form"))
             return redirect("finnotech:sms_auth:request_otp")
 
