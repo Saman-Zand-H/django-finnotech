@@ -174,11 +174,48 @@ class BackChequesInqury(BaseFinnotechResponse):
     @property
     def cheque_list(self):
         return self.payload.get("result", {}).get("chequeList", [])
-    
+
     @property
-    def has_back_cheques(self):
+    def has_back_cheque(self):
         return self.cheque_list or False
-    
+
     @property
     def back_cheques_number(self):
         return len(self.cheque_list)
+    
+    
+class DepositToIban(BaseFinnotechResponse):
+    @property
+    def iban(self):
+        return self.payload.get("result", {}).get("iban")
+
+
+class ClientIdentificationInquiry(BaseFinnotechResponse):
+    @property
+    def first_name(self):
+        return self.payload.get("result", {}).get("firstName")
+    
+    @property
+    def last_name(self):
+        return self.payload.get("result", {}).get("lastName")
+    
+    @property
+    def father_name(self):
+        return self.payload.get("result", {}).get("fatherName")
+    
+    @property
+    def gender(self):
+        return self.payload.get("result", {}).get("gender")
+    
+    @property
+    def identity_seri(self):
+        return self.payload.get("result", {}).get("identitySeri")
+    
+    @property
+    def identity_serial(self):
+        return self.payload.get("result", {}).get("identitySerial")
+    
+    @property
+    def identity_number(self):
+        return self.identity_seri + self.identity_serial
+

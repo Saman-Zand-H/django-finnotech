@@ -51,6 +51,8 @@ SCOPE_BOOMRANG_TOKENS_GET = "boomrang:tokens:get"
 SCOPE_BOOMRANG_TOKEN_DELETE = "boomrang:token:delete"
 SCOPE_BOOMRANG_SMS_VERIFY_EXECUTE = "boomrang:sms-verify:execute"
 SCOPE_BOOMRANG_SMS_SEND_EXECUTE = "boomrang:sms-send:execute"
+SCOPE_FACILITY_DEPOSIT_IBAN = "facility:cc-deposit-iban:get"
+SCOPE_KYC_IDENTIFICATION_INQUIRY = "kyc:identification-inquiry:get"
 
 ALL_SCOPE_CLIENT_CREDENTIALS = [
     # SCOPE_OAK_IBAN_INQUIRY_GET,

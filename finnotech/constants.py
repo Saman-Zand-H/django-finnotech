@@ -5,6 +5,8 @@ from .pyfinnotech.const import (
     SCOPE_CREDIT_SMS_BACK_CHEQUES_GET,
     SCOPE_ECITY_CC_POSTAL_CODE_INQUIRY,
     SCOPE_FACILITY_SHAHKAR_GET,
+    SCOPE_KYC_IDENTIFICATION_INQUIRY,
+    SCOPE_FACILITY_DEPOSIT_IBAN,
 )
 
 OTP_SEND_FINNOTECH_CACHE_KEY = "%(mobile)s_%(scope)s_sms"
@@ -54,3 +56,13 @@ class BackChequeInquiry(FinnotechEndpoint):
     scope = SCOPE_CREDIT_SMS_BACK_CHEQUES_GET
     method_name = FinnotechApiClient.back_cheques_inquiry.__name__
     url_name = "finnotech:back-cheques"
+
+
+class ClientIdentificationInquiry(FinnotechEndpoint):
+    scope = SCOPE_KYC_IDENTIFICATION_INQUIRY
+    method_name = FinnotechApiClient.client_identification_inquiry.__name__
+
+
+class DepositToIban(FinnotechEndpoint):
+    scope = SCOPE_FACILITY_SHAHKAR_GET
+    method_name = FinnotechApiClient.deposit_to_iban.__name__
