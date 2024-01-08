@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "versioneer[toml]"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -34,13 +34,6 @@ requires-python = ">=3.8"
 [project.urls]
 Homepage = "http://github.com/saman-zand-h/django-finnotech"
 
-[tool.versioneer]
-VCS = "git"
-style = "pep440"
-versionfile_source = "finnotech/_version.py"
-versionfile_build = "finnotech/_version.py"
-tag_prefix = ""
-parentdir_prefix = "finnotech-"
 
 [tool.setuptools]
 zip-safe = false
@@ -50,8 +43,8 @@ include-package-data = true
 exclude = ["conf*"]
 
 [tool.setuptools.dynamic]
-version = {attr = "finnotech._version"}
-dependencies = {file = ["requirements.txt"]}
+version = {attr = "finnotech.__init__.__version__"}
+dependencies = {file = ["requirements.txt"]}    
 
 [tool.mypy]
 python_version = "3.8"

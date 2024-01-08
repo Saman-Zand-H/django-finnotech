@@ -64,5 +64,5 @@ class ClientIdentificationInquiry(FinnotechEndpoint):
 
 
 class DepositToIban(FinnotechEndpoint):
-    scope = SCOPE_FACILITY_SHAHKAR_GET
+    scope = SCOPE_FACILITY_DEPOSIT_IBAN
     method_name = FinnotechApiClient.deposit_to_iban.__name__
