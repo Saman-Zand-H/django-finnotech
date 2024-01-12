@@ -19,7 +19,14 @@ from .const import (
     URL_SANDBOX,
 )
 from .exceptions import FinnotechException, FinnotechHttpException
-from .responses import BackChequesInqury, ClientIdentificationInquiry, NationalcodeMobileVerification, PostalcodeInquiry, DepositToIban
+from .responses import (
+    BackChequesInqury,
+    ClientIdentificationInquiry,
+    NationalcodeMobileVerification,
+    PostalcodeInquiry,
+    DepositToIban,
+    IbanInquiry,
+)
 from .token import ClientCredentialToken, Token
 
 
@@ -38,7 +45,9 @@ class FinnotechApiClient:
         authorization_token=None,
         base_url=None,
     ):
-        self.server_url = base_url or (URL_SANDBOX if is_sandbox is True else URL_MAINNET)
+        self.server_url = base_url or (
+            URL_SANDBOX if is_sandbox is True else URL_MAINNET
+        )
         self.logger = logger or logging.getLogger("pyfinnotech")
         self.client_id = client_id
         self.client_secret = client_secret
@@ -68,7 +77,10 @@ class FinnotechApiClient:
 
     @property
     def client_credential(self):
-        if self._client_credential_token is not None and self._client_credential_token.is_valid is True:
+        if (
+            self._client_credential_token is not None
+            and self._client_credential_token.is_valid is True
+        ):
             pass
         else:
             self._client_credential_token = ClientCredentialToken.fetch(self)
@@ -90,7 +102,11 @@ class FinnotechApiClient:
         track_id = self._generate_track_id() if no_track_id is False else None
         if track_id is not None:
             params.setdefault("trackId", track_id)
-        self.logger.debug(f"Requesting" f" on {uri} with id:{track_id}" f" with parameters: {'.'.join(str(params))}")
+        self.logger.debug(
+            f"Requesting"
+            f" on {uri} with id:{track_id}"
+            f" with parameters: {'.'.join(str(params))}"
+        )
 
         if token is not None:
             headers = {**headers, **token.generate_authorization_header()}
@@ -125,7 +141,9 @@ class FinnotechApiClient:
             try:
                 return response.json()
             except JSONDecodeError as e:
-                raise FinnotechHttpException(response=response, logger=self.logger, underlying_exception=e)
+                raise FinnotechHttpException(
+                    response=response, logger=self.logger, underlying_exception=e
+                )
 
         except FinnotechHttpException as e:
             raise e
@@ -155,17 +173,27 @@ class FinnotechApiClient:
 
     def client_identification_inquiry(self, national_code: str, birth_date: str):
         url = f"/kyc/v2/clients/{self.client_id}/identificationInquiry?nationalCode={national_code}&birthDate={birth_date}"
-        
+
         return ClientIdentificationInquiry(
             self._execute(
                 uri=url,
                 token=self.client_credential,
             )
         )
-        
+
+    def iban_inquiry(self, iban):
+        url = f"/oak/v2/clients/{self.client_id}/ibanInquiry?&iban={iban}"
+
+        return IbanInquiry(
+            self._execute(
+                uri=url,
+                token=self.client_credential,
+            )
+        )
+
     def deposit_to_iban(self, bank_code: str, deposit: str):
         url = f"/facility/v2/clients/{self.client_id}/depositToIban?deposit={deposit}&bankCode={bank_code}"
-        
+
         return DepositToIban(
             self._execute(
                 uri=url,

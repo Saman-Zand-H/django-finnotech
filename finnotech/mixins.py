@@ -34,7 +34,9 @@ def handle_finnotech_error(func):
             return func(self, *args, **kwargs)
         except FinnotechHttpException as e:
             request = self.request
-            logger.error(f"An error occurred while {request.user.username} was requesting for otp: {e}")
+            logger.error(
+                f"An error occurred while {request.user.username} was requesting for otp: {e}"
+            )
             msg = _("Something went wrong while validating your information.")
             messages.error(request, msg)
             raise ValidationError(msg)
@@ -48,7 +50,9 @@ def validate_finnotech_form(func):
         try:
             return func(*args, **kwargs)
         except (FinnotechHttpException, ValidationError):
-            messages.error(self.request, _("There was and error connecting to Finnotech."))
+            messages.error(
+                self.request, _("There was and error connecting to Finnotech.")
+            )
             self.request.session.delete(SMS_AUTH_ENDPOINT_SESSION_KEY)
             return self.form_invalid(self, *args, **kwargs)
 
@@ -64,7 +68,11 @@ def check_finnotech_timeout(session_cache_key, scope=None):
             if not (
                 cache.get(self.get_finnotech_cache_key(session_cache_key, mobile))
                 and (
-                    session_start := cache.get(self.get_finnotech_cache_key(SESSION_START_FINNOTECH_CACHE_KEY, mobile))
+                    session_start := cache.get(
+                        self.get_finnotech_cache_key(
+                            SESSION_START_FINNOTECH_CACHE_KEY, mobile
+                        )
+                    )
                 )
             ):
                 msg = _("Your authorization session has expired or does not exist.")
@@ -101,7 +109,9 @@ class FinnotechClientAuthMixin:
             scopes=[self.finnotech_endpoint.scope],
         )
         self.finnotech_sms_auth = SmsAuthorization
-        self.get_finnotech_cache_key = lambda key_name, mobile: key_name % self.cache_key_params(mobile)
+        self.get_finnotech_cache_key = (
+            lambda key_name, mobile: key_name % self.cache_key_params(mobile)
+        )
         self.cache_key_params = lambda i: {"scope": self.scope, "mobile": i}
 
     def get_cache_key(self, mobile):
@@ -137,8 +147,12 @@ class FinnotechClientAuthMixin:
     @check_finnotech_timeout(session_cache_key=OTP_SEND_FINNOTECH_CACHE_KEY)
     @handle_finnotech_error
     def verify_finnotech_otp(self, mobile, national_id, otp):
-        session = cache.get(self.get_finnotech_cache_key(OTP_SEND_FINNOTECH_CACHE_KEY, mobile))
-        session_start = cache.get(self.get_finnotech_cache_key(SESSION_START_FINNOTECH_CACHE_KEY, mobile))
+        session = cache.get(
+            self.get_finnotech_cache_key(OTP_SEND_FINNOTECH_CACHE_KEY, mobile)
+        )
+        session_start = cache.get(
+            self.get_finnotech_cache_key(SESSION_START_FINNOTECH_CACHE_KEY, mobile)
+        )
 
         response = self.finnotech_sms_auth.verify_sms(
             http_client=self.finnotech_apiclient,
@@ -158,7 +172,9 @@ class FinnotechClientAuthMixin:
     @check_finnotech_timeout(session_cache_key=OTP_VERIFY_FINNOTECH_CACHE_KEY)
     @handle_finnotech_error
     def get_finnotech_authtoken(self, mobile):
-        session = cache.get(self.get_finnotech_cache_key(OTP_VERIFY_FINNOTECH_CACHE_KEY, mobile))
+        session = cache.get(
+            self.get_finnotech_cache_key(OTP_VERIFY_FINNOTECH_CACHE_KEY, mobile)
+        )
         response = self.finnotech_sms_auth.request_token(
             http_client=self.finnotech_apiclient,
             code=session.code,

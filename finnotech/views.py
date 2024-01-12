@@ -28,7 +28,9 @@ class BaseView(FinnotechClientAuthMixin, View):
 class AuthorizationBaseView(BaseView):
     def dispatch(self, request, *args, **kwargs):
         if not (endpoint := request.session.get(SMS_AUTH_ENDPOINT_SESSION_KEY, None)):
-            return HttpResponseBadRequest(_("You don't have any on-going authorization request."))
+            return HttpResponseBadRequest(
+                _("You don't have any on-going authorization request.")
+            )
 
         # TODO: Fix redirecturl
         self.redirect_url = reverse("finnotech:back-cheques")
@@ -87,7 +89,9 @@ class NationalcodeMobileVerificationView(FormView, BaseView):
         national_id = form.cleaned_data.get("national_id")
         mobile = form.cleaned_data.get("mobile")
 
-        finnotech_response = self.make_finnotech_request(national_id=national_id, mobile=mobile)
+        finnotech_response = self.make_finnotech_request(
+            national_id=national_id, mobile=mobile
+        )
         context = {
             "is_valid": finnotech_response.is_valid,
             "form": form,
@@ -126,7 +130,9 @@ class BackChequeInquiryView(FormView, BaseView):
 
         # check if user already has an sms-auth token.
         if not (token := cache.get(cache_key)):
-            self.request.session[SMS_AUTH_ENDPOINT_SESSION_KEY] = self.finnotech_endpoint.to_dict()
+            self.request.session[
+                SMS_AUTH_ENDPOINT_SESSION_KEY
+            ] = self.finnotech_endpoint.to_dict()
             messages.info(self.request, _("Please fill in the form"))
             return redirect("finnotech:sms_auth:request_otp")
 

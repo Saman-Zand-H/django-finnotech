@@ -182,8 +182,8 @@ class BackChequesInqury(BaseFinnotechResponse):
     @property
     def back_cheques_number(self):
         return len(self.cheque_list)
-    
-    
+
+
 class DepositToIban(BaseFinnotechResponse):
     @property
     def iban(self):
@@ -194,28 +194,54 @@ class ClientIdentificationInquiry(BaseFinnotechResponse):
     @property
     def first_name(self):
         return self.payload.get("result", {}).get("firstName")
-    
+
     @property
     def last_name(self):
         return self.payload.get("result", {}).get("lastName")
-    
+
     @property
     def father_name(self):
         return self.payload.get("result", {}).get("fatherName")
-    
+
     @property
     def gender(self):
         return self.payload.get("result", {}).get("gender")
-    
+
     @property
     def identity_seri(self):
         return self.payload.get("result", {}).get("identitySeri")
-    
+
     @property
     def identity_serial(self):
         return self.payload.get("result", {}).get("identitySerial")
     
     @property
-    def identity_number(self):
-        return self.identity_seri + self.identity_serial
+    def national_code(self):
+        return self.payload.get("result", {}).get("nationalId")
 
+    @property
+    def identity_number(self):
+        id_number = self.payload.get("result", {}).get("identityNo")
+        return self.national_code if id_number == "0" else id_number
+
+
+class IbanInquiry(BaseFinnotechResponse):
+    @property
+    def deposit(self):
+        return self.payload.get("result", {}).get("deposit")
+
+    @property
+    def deposit_owner(self):
+        return self.payload.get("result", {}).get("depositOwner", {})
+
+    @property
+    def deposit_owner_first_name(self):
+        return self.deposit_owner.get("firstName")
+
+    @property
+    def deposit_owner_last_name(self):
+        return self.deposit_owner.get("lastName")
+
+    @property
+    def deposit_status(self):
+        return self.payload.get("result", {}).get("depositStatus")
